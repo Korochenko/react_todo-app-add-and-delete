@@ -11,8 +11,6 @@ import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
 import { useLocalStorage } from './LocalStorage';
 
-
-
 export const App: React.FC = () => {
   const [todos, setTodos] = useLocalStorage<Todo[]>('todo', []);
   const [loading, setLoading] = React.useState(false);
@@ -31,7 +29,8 @@ export const App: React.FC = () => {
       setShowNotification(false);
 
       setTimeout(() => {
-        todoService.getTodos()
+        todoService
+          .getTodos()
           .then(setTodos)
           .catch(() => {
             setError('Unable to load todos');
@@ -46,22 +45,24 @@ export const App: React.FC = () => {
 
   const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCode(event.target.value);
-}
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (code.trim() === '') {
       return;
     }
+
     const newTodo: Todo = {
       userId: todoService.USER_ID,
       id: todos.length ? Math.max(...todos.map(todo => todo.id)) + 1 : 1,
       title: code.trim(),
       completed: false,
     };
+
     setTodos(prev => [...prev, newTodo]);
     setCode('');
-  }
+  };
 
   function clearTodos() {
     setTodos(prev => prev.filter(todo => !todo.completed));
@@ -84,7 +85,7 @@ export const App: React.FC = () => {
   }
 
   function deleteTodo(todoId: number) {
-    todoService.deleteTodo(todoId)
+    todoService.deleteTodo(todoId);
     setTodos(prev => prev.filter(todo => todo.id !== todoId));
   }
 
@@ -93,26 +94,30 @@ export const App: React.FC = () => {
   }
 
   function toggleTodo(todoId: number) {
-    setTodos(prev => prev.map(todo => {
-      if (todo.id === todoId) {
-        return { ...todo, completed: !todo.completed };
-      }
-      return todo;
-    }));
+    setTodos(prev =>
+      prev.map(todo => {
+        if (todo.id === todoId) {
+          return { ...todo, completed: !todo.completed };
+        }
+
+        return todo;
+      }),
+    );
   }
 
   function toggleAllTodos() {
     const shouldComplete = activeTodosCount > 0;
-    setTodos(prev => prev.map(todo => ({ ...todo, completed: shouldComplete })));
+
+    setTodos(prev =>
+      prev.map(todo => ({ ...todo, completed: shouldComplete })),
+    );
   }
 
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
 
-      {loading && (
-        <Loader />
-      )}
+      {loading && <Loader />}
 
       {!loading && (
         <div className="todoapp__content">
@@ -148,7 +153,6 @@ export const App: React.FC = () => {
         isVisible={showNotification}
         onClose={closeNotification}
       />
-
     </div>
   );
 };

@@ -10,4 +10,3 @@ export const getTodos = () => {
 export const deleteTodo = (todoId: number) => {
   return client.delete(`/todos/${todoId}`);
 };
-
