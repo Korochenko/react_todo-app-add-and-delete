@@ -63,13 +63,10 @@ export const App: React.FC = () => {
   };
 
   const updateTodo = (id: number, title: string) => {
-    setTodos(prev => 
-      prev.map(todo => 
-        todo.id === id ? { ...todo, title } : todo
-      )
+    setTodos(prev =>
+      prev.map(todo => (todo.id === id ? { ...todo, title } : todo)),
     );
   };
-
 
   function clearTodos() {
     setTodos(prev => prev.filter(todo => !todo.completed));
@@ -106,6 +103,7 @@ export const App: React.FC = () => {
         if (todo.id === todoId) {
           return { ...todo, completed: !todo.completed };
         }
+
         return todo;
       }),
     );

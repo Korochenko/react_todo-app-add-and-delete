@@ -27,6 +27,7 @@ export const TodoList: React.FC<TodoListProps> = ({
     if (editingId && editValue.trim()) {
       updateTodo(editingId, editValue.trim());
     }
+
     setEditingId(null);
     setEditValue('');
   };
@@ -72,21 +73,21 @@ export const TodoList: React.FC<TodoListProps> = ({
               type="text"
               className="todo__title-field"
               value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
+              onChange={e => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
               autoFocus
             />
           ) : (
-            <span 
-              data-cy="TodoTitle" 
+            <span
+              data-cy="TodoTitle"
               className="todo__title"
               onDoubleClick={() => handleDoubleClick(todo)}
             >
               {todo.title}
             </span>
           )}
-          
+
           <button
             type="button"
             className="todo__remove"
@@ -95,7 +96,7 @@ export const TodoList: React.FC<TodoListProps> = ({
           >
             ×
           </button>
-          
+
           <div data-cy="TodoLoader" className="modal overlay">
             <div className="modal-background has-background-white-ter" />
             <div className="loader" />
