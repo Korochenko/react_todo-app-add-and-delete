@@ -20,7 +20,6 @@ export const App: React.FC = () => {
   >('all');
   const [code, setCode] = React.useState('');
   const [showNotification, setShowNotification] = React.useState(false);
-
   const activeTodosCount = todos.filter(todo => !todo.completed).length;
 
   React.useEffect(() => {
@@ -37,7 +36,6 @@ export const App: React.FC = () => {
             setShowNotification(true);
             setTimeout(() => setShowNotification(false), 3000);
           })
-
           .finally(() => setLoading(false));
       }, 100);
     }
@@ -63,6 +61,15 @@ export const App: React.FC = () => {
     setTodos(prev => [...prev, newTodo]);
     setCode('');
   };
+
+  const updateTodo = (id: number, title: string) => {
+    setTodos(prev => 
+      prev.map(todo => 
+        todo.id === id ? { ...todo, title } : todo
+      )
+    );
+  };
+
 
   function clearTodos() {
     setTodos(prev => prev.filter(todo => !todo.completed));
@@ -99,7 +106,6 @@ export const App: React.FC = () => {
         if (todo.id === todoId) {
           return { ...todo, completed: !todo.completed };
         }
-
         return todo;
       }),
     );
@@ -135,6 +141,7 @@ export const App: React.FC = () => {
             filterByStatus={filterByStatus}
             toggleTodo={toggleTodo}
             deleteTodo={deleteTodo}
+            updateTodo={updateTodo}
           />
 
           {todos.length > 0 && (
