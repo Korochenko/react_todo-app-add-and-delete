@@ -2,22 +2,23 @@ import React from 'react';
 
 interface ErrorNotificationProps {
   message: string | null;
-  isVisible: boolean;
   onClose: () => void;
+  isVisible?: boolean; 
 }
 
 export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
   message,
-  isVisible,
   onClose,
 }) => {
+
+  if (!message) {
+    return null;
+  }
+
   return (
     <div
       data-cy="ErrorNotification"
-      className={
-        'notification is-danger is-light has-text-weight-normal' +
-        (isVisible ? '' : ' hidden')
-      }
+      className="notification is-danger is-light has-text-weight-normal"
     >
       <button
         data-cy="HideErrorButton"

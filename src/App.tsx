@@ -14,7 +14,7 @@ import { useLocalStorage } from './LocalStorage';
 export const App: React.FC = () => {
   const [todos, setTodos] = useLocalStorage<Todo[]>('todo', []);
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>('');
+  const [error, setError] = React.useState<string | null>(null);
   const [filterByStatus, setFilterByStatus] = React.useState<
     'all' | 'active' | 'completed'
   >('all');
@@ -43,13 +43,23 @@ export const App: React.FC = () => {
 
   const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCode(event.target.value);
+
+    if (error === 'Title should not be empty' && showNotification) {
+      setError(null);
+      setShowNotification(false);
+    }
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (code.trim() === '') {
+      setError('Title should not be empty');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
       return;
     }
+
+    
 
     const newTodo: Todo = {
       userId: todoService.USER_ID,
@@ -60,6 +70,8 @@ export const App: React.FC = () => {
 
     setTodos(prev => [...prev, newTodo]);
     setCode('');
+    setError(null);
+    setShowNotification(false);
   };
 
   const updateTodo = (id: number, title: string) => {
@@ -86,6 +98,7 @@ export const App: React.FC = () => {
 
   function closeNotification() {
     setShowNotification(false);
+    setError(null);
   }
 
   function deleteTodo(todoId: number) {
