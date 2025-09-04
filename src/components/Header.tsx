@@ -8,6 +8,7 @@ interface HeaderProps {
   todos: Todo[];
   activeTodosCount: number;
   toggleAllTodos: () => void;
+  isSubmitting?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   todos,
   activeTodosCount,
   toggleAllTodos,
+  isSubmitting = false,
 }) => {
   return (
     <header className="todoapp__header">
@@ -39,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
           autoFocus
           onChange={handleCodeChange}
           value={code}
+          disabled={isSubmitting}
         />
       </form>
     </header>

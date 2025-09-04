@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Todo } from '../types/Todo';
 
 interface TodoListProps {
@@ -7,6 +7,7 @@ interface TodoListProps {
   toggleTodo: (id: number) => void;
   deleteTodo: (id: number) => void;
   updateTodo: (id: number, title: string) => void;
+  tempTodoId?: number | null;
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
@@ -15,9 +16,8 @@ export const TodoList: React.FC<TodoListProps> = ({
   deleteTodo,
   updateTodo,
 }) => {
-  const [editingId, setEditingId] = React.useState<number | null>(null);
-  const [editValue, setEditValue] = React.useState('');
-  
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   const handleDoubleClick = (todo: Todo) => {
     setEditingId(todo.id);
