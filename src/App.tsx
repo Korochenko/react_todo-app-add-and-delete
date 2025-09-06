@@ -10,6 +10,7 @@ import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
 
+
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export const App: React.FC = () => {
   const [code, setCode] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tempTodoId, setTempTodoId] = useState<number | null>(null);
+  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const activeTodosCount = todos.filter(todo => !todo.completed).length;
 
   useEffect(() => {
@@ -69,26 +70,25 @@ export const App: React.FC = () => {
       userId: todoService.USER_ID,
       title: code.trim(),
       completed: false,
+      isTemp: true,
     };
 
-    setTempTodoId(tempId);
-    setTodos(prev => [...prev, tempTodo]);
+    setTempTodo(tempTodo);
 
     try {
       const createdTodo = await todoService.createTodo(code.trim());
 
-      setTodos(prev =>
-        prev.map(todo => (todo.id === tempTodo.id ? createdTodo : todo)),
-      );
+
+      setTempTodo(null);
+      setTodos(prev => [...prev, createdTodo])
       setCode('');
     } catch {
-      setTodos(prev => prev.filter(todo => todo.id !== tempTodo.id));
+      setTempTodo(null);
       setError('Unable to add a todo');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
     } finally {
       setIsSubmitting(false);
-      setTempTodoId(null);
     }
   };
 
@@ -138,16 +138,27 @@ export const App: React.FC = () => {
     }
   };
 
-  function filteredTodos() {
-    if (filterByStatus === 'active') {
-      return todos.filter(todo => !todo.completed);
+ function filteredTodos() {
+  let baseTodos = todos;
+  
+  if (filterByStatus === 'active') {
+    baseTodos = todos.filter(todo => !todo.completed);
+  } else if (filterByStatus === 'completed') {
+    baseTodos = todos.filter(todo => todo.completed);
+  }
+  
+  if (tempTodo) {
+    const shouldShowTemp = 
+      filterByStatus === 'all' || 
+      (filterByStatus === 'active' && !tempTodo.completed) ||
+      (filterByStatus === 'completed' && tempTodo.completed);
+    
+    if (shouldShowTemp) {
+      return [tempTodo, ...baseTodos];
     }
-
-    if (filterByStatus === 'completed') {
-      return todos.filter(todo => todo.completed);
-    }
-
-    return todos;
+  }
+  
+  return baseTodos;
   }
 
   function closeNotification() {
@@ -243,7 +254,7 @@ export const App: React.FC = () => {
             toggleTodo={toggleTodo}
             deleteTodo={deleteTodo}
             updateTodo={updateTodo}
-            tempTodoId={tempTodoId}
+            tempTodo={tempTodo ? tempTodo.id : null}
           />
 
           {todos.length > 0 && (

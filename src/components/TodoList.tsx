@@ -7,7 +7,7 @@ interface TodoListProps {
   toggleTodo: (id: number) => void;
   deleteTodo: (id: number) => void;
   updateTodo: (id: number, title: string) => void;
-  tempTodoId?: number | null;
+  tempTodo?: number | null;
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
@@ -15,6 +15,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   toggleTodo,
   deleteTodo,
   updateTodo,
+  tempTodo
 }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -50,60 +51,71 @@ export const TodoList: React.FC<TodoListProps> = ({
     handleSave();
   };
 
+
   return (
     <section className="todoapp__main" data-cy="TodoList">
-      {todos.map(todo => (
-        <div
-          key={todo.id}
-          data-cy="Todo"
-          className={`todo ${todo.completed ? 'completed' : ''} ${editingId === todo.id ? 'editing' : ''}`}
-        >
-          <label className="todo__status-label">
-            <input
-              data-cy="TodoStatus"
-              type="checkbox"
-              className="todo__status"
-              checked={todo.completed}
-              onChange={() => toggleTodo(todo.id)}
-            />
-          </label>
+      {todos.map(todo => {
+        const isTemp = tempTodo === todo.id;
 
-          {editingId === todo.id ? (
-            <input
-              data-cy="TodoTitleField"
-              type="text"
-              className="todo__title-field"
-              value={editValue}
-              onChange={e => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleBlur}
-              autoFocus
-            />
-          ) : (
-            <span
-              data-cy="TodoTitle"
-              className="todo__title"
-              onDoubleClick={() => handleDoubleClick(todo)}
-            >
-              {todo.title}
-            </span>
-          )}
+        return (
+          <div
 
-          <button
-            type="button"
-            className="todo__remove"
-            data-cy="TodoDelete"
-            onClick={() => deleteTodo(todo.id)}
+            key={todo.id}
+            data-cy="Todo"
+            className={`todo ${todo.completed ? 'completed' : ''} ${editingId === todo.id ? 'editing' : ''}`}
           >
-            ×
-          </button>
+            <label className="todo__status-label">
+              <input
+                data-cy="TodoStatus"
+                type="checkbox"
+                className="todo__status"
+                checked={todo.completed}
+                onChange={() => !isTemp && toggleTodo(todo.id)}
+                disabled={isTemp}
+              />
+            </label>
 
-          <div data-cy="TodoLoader" className="modal overlay">
-            <div className="modal-background has-background-white-ter" />
-            <div className="loader" />
+            {editingId === todo.id ? (
+              <input
+                data-cy="TodoTitleField"
+                type="text"
+                className="todo__title-field"
+                value={editValue}
+                onChange={e => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={handleBlur}
+                autoFocus
+              />
+            ) : (
+              <span
+                data-cy="TodoTitle"
+                className="todo__title"
+                onDoubleClick={() => !isTemp && handleDoubleClick(todo)}
+              >
+                {todo.title}
+              </span>
+            )}
+
+           {!isTemp && (
+             <button
+              type="button"
+              className="todo__remove"
+              data-cy="TodoDelete"
+              onClick={() => deleteTodo(todo.id)}
+              disabled={isTemp}
+            >
+              ×
+            </button>
+           )}
+
+              <div data-cy="TodoLoader" className="modal overlay">
+                <div className="modal-background has-background-white-ter" />
+                <div className="loader" />
+              </div>
           </div>
-        </div>
-      ))}
+        )
+
+      })}
     </section>
   );
 };
