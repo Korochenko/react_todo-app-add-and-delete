@@ -15,7 +15,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   toggleTodo,
   deleteTodo,
   updateTodo,
-  tempTodo
+  tempTodo,
 }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -51,7 +51,6 @@ export const TodoList: React.FC<TodoListProps> = ({
     handleSave();
   };
 
-
   return (
     <section className="todoapp__main" data-cy="TodoList">
       {todos.map(todo => {
@@ -59,7 +58,6 @@ export const TodoList: React.FC<TodoListProps> = ({
 
         return (
           <div
-
             key={todo.id}
             data-cy="Todo"
             className={`todo ${todo.completed ? 'completed' : ''} ${editingId === todo.id ? 'editing' : ''}`}
@@ -96,25 +94,24 @@ export const TodoList: React.FC<TodoListProps> = ({
               </span>
             )}
 
-           {!isTemp && (
-             <button
-              type="button"
-              className="todo__remove"
-              data-cy="TodoDelete"
-              onClick={() => deleteTodo(todo.id)}
-              disabled={isTemp}
-            >
-              ×
-            </button>
-           )}
+            {!isTemp && (
+              <button
+                type="button"
+                className="todo__remove"
+                data-cy="TodoDelete"
+                onClick={() => deleteTodo(todo.id)}
+                disabled={isTemp}
+              >
+                ×
+              </button>
+            )}
 
-              <div data-cy="TodoLoader" className="modal overlay">
-                <div className="modal-background has-background-white-ter" />
-                <div className="loader" />
-              </div>
+            <div data-cy="TodoLoader" className="modal overlay">
+              <div className="modal-background has-background-white-ter" />
+              <div className="loader" />
+            </div>
           </div>
-        )
-
+        );
       })}
     </section>
   );

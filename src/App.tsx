@@ -10,7 +10,6 @@ import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
 
-
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,9 +77,8 @@ export const App: React.FC = () => {
     try {
       const createdTodo = await todoService.createTodo(code.trim());
 
-
       setTempTodo(null);
-      setTodos(prev => [...prev, createdTodo])
+      setTodos(prev => [...prev, createdTodo]);
       setCode('');
     } catch {
       setTempTodo(null);
@@ -138,27 +136,27 @@ export const App: React.FC = () => {
     }
   };
 
- function filteredTodos() {
-  let baseTodos = todos;
-  
-  if (filterByStatus === 'active') {
-    baseTodos = todos.filter(todo => !todo.completed);
-  } else if (filterByStatus === 'completed') {
-    baseTodos = todos.filter(todo => todo.completed);
-  }
-  
-  if (tempTodo) {
-    const shouldShowTemp = 
-      filterByStatus === 'all' || 
-      (filterByStatus === 'active' && !tempTodo.completed) ||
-      (filterByStatus === 'completed' && tempTodo.completed);
-    
-    if (shouldShowTemp) {
-      return [tempTodo, ...baseTodos];
+  function filteredTodos() {
+    let baseTodos = todos;
+
+    if (filterByStatus === 'active') {
+      baseTodos = todos.filter(todo => !todo.completed);
+    } else if (filterByStatus === 'completed') {
+      baseTodos = todos.filter(todo => todo.completed);
     }
-  }
-  
-  return baseTodos;
+
+    if (tempTodo) {
+      const shouldShowTemp =
+        filterByStatus === 'all' ||
+        (filterByStatus === 'active' && !tempTodo.completed) ||
+        (filterByStatus === 'completed' && tempTodo.completed);
+
+      if (shouldShowTemp) {
+        return [tempTodo, ...baseTodos];
+      }
+    }
+
+    return baseTodos;
   }
 
   function closeNotification() {
