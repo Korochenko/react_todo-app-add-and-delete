@@ -29,15 +29,15 @@ export const App: React.FC = () => {
     wrapWithLoading(async () => {
       setShowNotification(false);
       try {
-        const todos = await todoService.getTodos()
-        setTodos(todos)
+        const todos = await todoService.getTodos();
+
+        setTodos(todos);
       } catch {
         setError('Unable to load todos');
         setShowNotification(true);
         setTimeout(() => setShowNotification(false), 3000);
-      } 
-    })
-
+      }
+    });
   }, []);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -148,7 +148,9 @@ export const App: React.FC = () => {
     }
 
     if (successfullyDeleted.length > 0) {
-      setTodos(prev => prev.filter(todo => !successfullyDeleted.includes(todo.id)));
+      setTodos(prev =>
+        prev.filter(todo => !successfullyDeleted.includes(todo.id)),
+      );
     }
 
     if (hasErrors) {
@@ -189,7 +191,6 @@ export const App: React.FC = () => {
     setShowNotification(false);
     setError(null);
   }
-
 
   const deleteTodo = async (todoId: number) => {
     setError(null);
@@ -260,7 +261,6 @@ export const App: React.FC = () => {
       setTimeout(() => setShowNotification(false), 3000);
     }
   };
-
 
   return (
     <div className="todoapp">
