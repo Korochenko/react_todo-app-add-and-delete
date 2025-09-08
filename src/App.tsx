@@ -21,6 +21,7 @@ export const App: React.FC = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
+  const [deletingTodos, setDeletingTodos] = useState<number[]>([]);
   const activeTodosCount = todos.filter(todo => !todo.completed).length;
 
   useEffect(() => {
@@ -39,6 +40,16 @@ export const App: React.FC = () => {
         .finally(() => setLoading(false));
     }, 100);
   }, []);
+
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isSubmitting && (error || code === '')) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    }
+  }, [isSubmitting, error, code]);
 
   const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCode(event.target.value);
@@ -77,8 +88,8 @@ export const App: React.FC = () => {
     try {
       const createdTodo = await todoService.createTodo(code.trim());
 
-      setTempTodo(null);
       setTodos(prev => [...prev, createdTodo]);
+      setTempTodo(null);
       setCode('');
     } catch {
       setTempTodo(null);
@@ -120,21 +131,41 @@ export const App: React.FC = () => {
     }
   };
 
-  const clearTodos = async () => {
+const clearTodos = async () => {
+  setError(null);
+  setShowNotification(false);
+
+  const completedTodos = todos.filter(todo => todo.completed);
+  const successfullyDeleted: number[] = [];
+  let hasErrors = false;
+
+  for (const todo of completedTodos) {
+    try {
+      await todoService.deleteTodo(todo.id);
+      successfullyDeleted.push(todo.id);
+    } catch {
+      hasErrors = true;
+    }
+  }
+
+  if (successfullyDeleted.length > 0) {
+    setTodos(prev => prev.filter(todo => !successfullyDeleted.includes(todo.id)));
+  }
+
+  if (hasErrors) {
+    if (successfullyDeleted.length > 0) {
+      setError(`${successfullyDeleted.length} todos cleared successfully, but some todos failed to delete.`);
+    } else {
+      setError('Unable to delete a todo');
+    }
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  } else {
     setError(null);
     setShowNotification(false);
-
-    try {
-      await todoService.clearCompletedTodos(todos);
-      setTodos(prev => prev.filter(todo => !todo.completed));
-      setError(null);
-      setShowNotification(false);
-    } catch {
-      setError('Failed to clear completed todos. Please try again.');
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
-    }
-  };
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
+};
 
   function filteredTodos() {
     let baseTodos = todos;
@@ -152,7 +183,7 @@ export const App: React.FC = () => {
         (filterByStatus === 'completed' && tempTodo.completed);
 
       if (shouldShowTemp) {
-        return [tempTodo, ...baseTodos];
+        return [...baseTodos, tempTodo];
       }
     }
 
@@ -164,19 +195,28 @@ export const App: React.FC = () => {
     setError(null);
   }
 
+
   const deleteTodo = async (todoId: number) => {
     setError(null);
     setShowNotification(false);
+
+    setDeletingTodos(prev => [...prev, todoId]);
 
     try {
       await todoService.deleteTodo(todoId);
       setTodos(prev => prev.filter(todo => todo.id !== todoId));
       setError(null);
       setShowNotification(false);
+
+      setTimeout(() => inputRef.current?.focus(), 0);
     } catch {
       setError('Unable to delete a todo');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
+
+      setTimeout(() => inputRef.current?.focus(), 0);
+    } finally {
+      setDeletingTodos(prev => prev.filter(id => id !== todoId));
     }
   };
 
@@ -228,6 +268,7 @@ export const App: React.FC = () => {
     }
   };
 
+
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
@@ -244,6 +285,7 @@ export const App: React.FC = () => {
             activeTodosCount={activeTodosCount}
             toggleAllTodos={toggleAllTodos}
             isSubmitting={isSubmitting}
+            inputRef={inputRef}
           />
 
           <TodoList
@@ -253,6 +295,7 @@ export const App: React.FC = () => {
             deleteTodo={deleteTodo}
             updateTodo={updateTodo}
             tempTodo={tempTodo ? tempTodo.id : null}
+            deletingTodos={deletingTodos}
           />
 
           {todos.length > 0 && (
@@ -261,6 +304,7 @@ export const App: React.FC = () => {
               filterByStatus={filterByStatus}
               setFilterByStatus={setFilterByStatus}
               clearTodos={clearTodos}
+              completedTodosCount={todos.length - activeTodosCount}
             />
           )}
         </div>

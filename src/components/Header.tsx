@@ -9,6 +9,7 @@ interface HeaderProps {
   activeTodosCount: number;
   toggleAllTodos: () => void;
   isSubmitting?: boolean;
+  inputRef: React.RefObject<HTMLInputElement>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTodosCount,
   toggleAllTodos,
   isSubmitting = false,
+  inputRef,
 }) => {
   return (
     <header className="todoapp__header">
@@ -34,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       <form onSubmit={handleSubmit}>
         <input
+          ref={inputRef}
           data-cy="NewTodoField"
           type="text"
           className="todoapp__new-todo"

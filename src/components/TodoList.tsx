@@ -8,6 +8,7 @@ interface TodoListProps {
   deleteTodo: (id: number) => void;
   updateTodo: (id: number, title: string) => void;
   tempTodo?: number | null;
+  deletingTodos?: number[];
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
@@ -16,6 +17,7 @@ export const TodoList: React.FC<TodoListProps> = ({
   deleteTodo,
   updateTodo,
   tempTodo,
+  deletingTodos = [],
 }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -55,6 +57,8 @@ export const TodoList: React.FC<TodoListProps> = ({
     <section className="todoapp__main" data-cy="TodoList">
       {todos.map(todo => {
         const isTemp = tempTodo === todo.id;
+        const isDeleting = deletingTodos.includes(todo.id);
+        const showLoader = isTemp || isDeleting;
 
         return (
           <div
@@ -68,8 +72,8 @@ export const TodoList: React.FC<TodoListProps> = ({
                 type="checkbox"
                 className="todo__status"
                 checked={todo.completed}
-                onChange={() => !isTemp && toggleTodo(todo.id)}
-                disabled={isTemp}
+                onChange={() => !isTemp && !isDeleting && toggleTodo(todo.id)}
+                disabled={isTemp || isDeleting}
               />
             </label>
 
@@ -88,7 +92,7 @@ export const TodoList: React.FC<TodoListProps> = ({
               <span
                 data-cy="TodoTitle"
                 className="todo__title"
-                onDoubleClick={() => !isTemp && handleDoubleClick(todo)}
+                onDoubleClick={() => !isTemp && !isDeleting && handleDoubleClick(todo)}
               >
                 {todo.title}
               </span>
@@ -99,14 +103,17 @@ export const TodoList: React.FC<TodoListProps> = ({
                 type="button"
                 className="todo__remove"
                 data-cy="TodoDelete"
-                onClick={() => deleteTodo(todo.id)}
-                disabled={isTemp}
+                onClick={() => !isDeleting && deleteTodo(todo.id)}
+                disabled={isDeleting}
               >
                 ×
               </button>
             )}
 
-            <div data-cy="TodoLoader" className="modal overlay">
+            <div 
+              data-cy="TodoLoader" 
+              className={`modal overlay${showLoader ? ' is-active' : ''}`}
+            >
               <div className="modal-background has-background-white-ter" />
               <div className="loader" />
             </div>
