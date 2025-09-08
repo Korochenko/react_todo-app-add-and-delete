@@ -9,10 +9,11 @@ import { Header } from './components/Header';
 import { TodoList } from './components/TodoList';
 import { Footer } from './components/Footer';
 import { ErrorNotification } from './components/ErrorNotification';
+import { useLoading } from './hooks/useLoading';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, wrapWithLoading] = useLoading();
   const [error, setError] = useState<string | null>(null);
   const [filterByStatus, setFilterByStatus] = useState<
     'all' | 'active' | 'completed'
@@ -25,20 +26,18 @@ export const App: React.FC = () => {
   const activeTodosCount = todos.filter(todo => !todo.completed).length;
 
   useEffect(() => {
-    setLoading(true);
-    setShowNotification(false);
+    wrapWithLoading(async () => {
+      setShowNotification(false);
+      try {
+        const todos = await todoService.getTodos()
+        setTodos(todos)
+      } catch {
+        setError('Unable to load todos');
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 3000);
+      } 
+    })
 
-    setTimeout(() => {
-      todoService
-        .getTodos()
-        .then(setTodos)
-        .catch(() => {
-          setError('Unable to load todos');
-          setShowNotification(true);
-          setTimeout(() => setShowNotification(false), 3000);
-        })
-        .finally(() => setLoading(false));
-    }, 100);
   }, []);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -131,41 +130,37 @@ export const App: React.FC = () => {
     }
   };
 
-const clearTodos = async () => {
-  setError(null);
-  setShowNotification(false);
-
-  const completedTodos = todos.filter(todo => todo.completed);
-  const successfullyDeleted: number[] = [];
-  let hasErrors = false;
-
-  for (const todo of completedTodos) {
-    try {
-      await todoService.deleteTodo(todo.id);
-      successfullyDeleted.push(todo.id);
-    } catch {
-      hasErrors = true;
-    }
-  }
-
-  if (successfullyDeleted.length > 0) {
-    setTodos(prev => prev.filter(todo => !successfullyDeleted.includes(todo.id)));
-  }
-
-  if (hasErrors) {
-    if (successfullyDeleted.length > 0) {
-      setError(`${successfullyDeleted.length} todos cleared successfully, but some todos failed to delete.`);
-    } else {
-      setError('Unable to delete a todo');
-    }
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
-  } else {
+  const clearTodos = async () => {
     setError(null);
     setShowNotification(false);
-    setTimeout(() => inputRef.current?.focus(), 0);
-  }
-};
+
+    const completedTodos = todos.filter(todo => todo.completed);
+    const successfullyDeleted: number[] = [];
+    let hasErrors = false;
+
+    for (const todo of completedTodos) {
+      try {
+        await todoService.deleteTodo(todo.id);
+        successfullyDeleted.push(todo.id);
+      } catch {
+        hasErrors = true;
+      }
+    }
+
+    if (successfullyDeleted.length > 0) {
+      setTodos(prev => prev.filter(todo => !successfullyDeleted.includes(todo.id)));
+    }
+
+    if (hasErrors) {
+      setError('Unable to delete a todo');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    } else {
+      setError(null);
+      setShowNotification(false);
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  };
 
   function filteredTodos() {
     let baseTodos = todos;
@@ -205,8 +200,6 @@ const clearTodos = async () => {
     try {
       await todoService.deleteTodo(todoId);
       setTodos(prev => prev.filter(todo => todo.id !== todoId));
-      setError(null);
-      setShowNotification(false);
 
       setTimeout(() => inputRef.current?.focus(), 0);
     } catch {
